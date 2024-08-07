@@ -16,6 +16,33 @@
 namespace
 {
 
+static DdVertex myShapeVertices[] =
+{
+	{0,0,0},
+	{1,0,0},
+	{0,1,0},
+	{0,0,1}
+};
+
+static const uint16_t myShapeTriList0[] =
+{
+	0 , 1 , 2,
+	0 , 1 , 3,
+	0 , 2 , 3
+};
+
+static const uint16_t myShapeTriList1[] =
+{
+	0 , 1 , 2,
+	0 , 1 , 3,
+	0 , 2 , 3,
+	1 , 2 , 3,
+	2 , 1 , 0,
+	3 , 1 , 0,
+	3 , 2 , 0,
+	3 , 2 , 1
+};
+
 static DdVertex s_bunnyVertices[] =
 {
 	{   25.0883f,  -44.2788f,   31.0055f },
@@ -816,7 +843,12 @@ public:
 			, BX_COUNTOF(s_bunnyTriList)
 			, s_bunnyTriList
 			);
-
+		m_myShape = ddCreateGeometry(
+			BX_COUNTOF(myShapeVertices)
+			, myShapeVertices
+			, BX_COUNTOF(myShapeTriList1)
+			, myShapeTriList1
+		);
 		imguiCreate();
 	}
 
@@ -825,6 +857,7 @@ public:
 		imguiDestroy();
 
 		ddDestroy(m_bunny);
+		ddDestroy(m_myShape);
 		ddDestroy(m_sprite);
 
 		ddShutdown();
@@ -863,6 +896,18 @@ public:
 	{
 		if (!entry::processEvents(m_width, m_height, m_debug, m_reset, &m_mouseState) )
 		{
+			static bool firsttime = true;
+			static float amplitudeMul = 0.0f;
+			static float timeScale = 1.0f;
+			static int lod = 3;
+			static int rbLod = 3;
+			static bool capsuleShow = false;
+			static bool AabbShow = false;
+			static bool prmShow = false;
+			static bool othershow = false;
+			static float xrotation = 0.0f;
+			static float yrotation = 0.0f;
+			static float zrotation = 0.0f;
 			imguiBeginFrame(
 				   m_mouseState.m_mx
 				,  m_mouseState.m_my
@@ -876,29 +921,151 @@ public:
 
 			showExampleDialog(this);
 
-			ImGui::SetNextWindowPos(
-				  ImVec2(m_width - m_width / 5.0f - 10.0f, 10.0f)
-				, ImGuiCond_FirstUseEver
+			{
+				ImGui::SetNextWindowPos(
+					ImVec2(m_width - m_width / 5.0f - 10.0f, 10.0f)
+					, ImGuiCond_FirstUseEver
 				);
-			ImGui::SetNextWindowSize(
-				  ImVec2(m_width / 5.0f, m_height / 3.0f)
-				, ImGuiCond_FirstUseEver
-				);
-			ImGui::Begin("Settings"
-				, NULL
-				, 0
+				ImGui::SetNextWindowSize(
+					ImVec2(m_width / 5.0f, m_height / 3.0f)
+					, ImGuiCond_FirstUseEver
 				);
 
-			static float amplitudeMul = 0.0f;
-			ImGui::SliderFloat("Amplitude", &amplitudeMul, 0.0f, 1.0f);
+				if(firsttime)
+					ImGui::SetNextWindowCollapsed(true);
+				ImGui::Begin("Settings"
+					, NULL
+					, 0
+				);
+				
+				ImGui::SliderFloat("Amplitude", &amplitudeMul, 0.0f, 1.0f);
 
-			static float timeScale = 1.0f;
-			ImGui::SliderFloat("T scale", &timeScale, -1.0f, 1.0f);
+				ImGui::SliderFloat("T scale", &timeScale, -1.0f, 1.0f);
+			}
 
 			ImGui::End();
+			{
+				ImGui::SetNextWindowPos(ImVec2(m_width - m_width / 5.0f - 10.0f, 30.0f)
+					, ImGuiCond_FirstUseEver);
+				ImGui::SetNextWindowSize(
+					ImVec2(m_width / 5.0f, m_height / 4.0f)
+					, ImGuiCond_FirstUseEver
+				);
+				if (firsttime)
+					ImGui::SetNextWindowCollapsed(true);
+				ImGui::Begin("Sphere Toggle"
+					, NULL
+					, 0
+				);
+				ImGui::Checkbox("Show sp0", &sp0);
+				ImGui::Checkbox("Show sp1", &sp1);
+				ImGui::Checkbox("Show sp2", &sp2);
+				ImGui::Checkbox("Show sp3", &sp3);
+			}
+			ImGui::End();
+			{
+				ImGui::SetNextWindowPos(ImVec2(m_width - m_width / 5.0f - 10.0f, 50.0f)
+					, ImGuiCond_FirstUseEver);
+				ImGui::SetNextWindowSize(
+					ImVec2(m_width / 5.0f, m_height / 4.0f)
+					, ImGuiCond_FirstUseEver
+				);
+				if (firsttime)
+					ImGui::SetNextWindowCollapsed(true);
+				ImGui::Begin("Bunny Setting"
+					, NULL
+					, 0
+				);
+				ImGui::Checkbox("Show bunny", &rabbit);
+				if (rabbit)	ImGui::Checkbox("wireframe", &rbWf);
+				else rbWf = false;
 
+				ImGui::SliderInt("lod", &rbLod, 0, 3);
+			}
+			ImGui::End();
+			{
+				ImGui::SetNextWindowPos(ImVec2(m_width - m_width / 5.0f - 10.0f, 70.0f)
+					, ImGuiCond_FirstUseEver);
+				ImGui::SetNextWindowSize(
+					ImVec2(m_width / 5.0f, m_height / 8.0f)
+					, ImGuiCond_FirstUseEver
+				);
+				if (firsttime)
+					ImGui::SetNextWindowCollapsed(true);
+				ImGui::Begin("arrow"
+					, NULL
+					, 0
+				);
+				ImGui::Checkbox("Show", &foo);
+				ImGui::SliderInt("lod", &lod, 0, 3);
+			}
+			ImGui::End();
+			{
+				ImGui::SetNextWindowPos(ImVec2(m_width - m_width / 5.0f - 10.0f, 90.0f)
+					, ImGuiCond_FirstUseEver);
+				ImGui::SetNextWindowSize(
+					ImVec2(m_width / 5.0f, m_height / 8.0f)
+					, ImGuiCond_FirstUseEver
+				);
+				if (firsttime)
+					ImGui::SetNextWindowCollapsed(true);
+				ImGui::Begin("Capsule"
+					, NULL
+					, 0
+				);
+				ImGui::Checkbox("Show", &capsuleShow);
+			}
+			ImGui::End(); {
+				ImGui::SetNextWindowPos(ImVec2(m_width - m_width / 5.0f - 10.0f, 110.0f)
+					, ImGuiCond_FirstUseEver);
+				ImGui::SetNextWindowSize(
+					ImVec2(m_width / 5.0f, m_height / 8.0f)
+					, ImGuiCond_FirstUseEver
+				);
+				if (firsttime)
+					ImGui::SetNextWindowCollapsed(true);
+				ImGui::Begin("Aabb"
+					, NULL
+					, 0
+				);
+				ImGui::Checkbox("Show", &AabbShow);
+			}
+			ImGui::End();
+			{
+				ImGui::SetNextWindowPos(ImVec2(m_width - m_width / 5.0f - 10.0f, 130.0f)
+					, ImGuiCond_FirstUseEver);
+				ImGui::SetNextWindowSize(
+					ImVec2(m_width / 5.0f, m_height / 2.0f)
+					, ImGuiCond_FirstUseEver
+				);
+				if (firsttime)
+					ImGui::SetNextWindowCollapsed(true);
+				ImGui::Begin("myShape"
+					, NULL
+					, 0
+				);
+				ImGui::Checkbox("Show", &prmShow);
+				ImGui::SliderFloat("xrotation", &xrotation, 0, bx::kPi2);
+				ImGui::SliderFloat("yrotation", &yrotation, 0, bx::kPi2);
+				ImGui::SliderFloat("zrotation", &zrotation, 0, bx::kPi2);
+			}
+			ImGui::End(); {
+				ImGui::SetNextWindowPos(ImVec2(m_width - m_width / 5.0f - 10.0f, 150.0f)
+					, ImGuiCond_FirstUseEver);
+				ImGui::SetNextWindowSize(
+					ImVec2(m_width / 5.0f, m_height / 8.0f)
+					, ImGuiCond_FirstUseEver
+				);
+				ImGui::Begin("Toggle Other"
+					, NULL
+					, 0
+				);
+				ImGui::Checkbox("Show others", &othershow);
+			}
+			ImGui::End();
 			imguiEndFrame();
 
+			firsttime = false;
 			int64_t now = bx::getHPCounter() - m_timeOffset;
 			static int64_t last = now;
 			const int64_t frameTime = now - last;
@@ -947,58 +1114,81 @@ public:
 			DebugDrawEncoder dde;
 
 			dde.begin(0);
-			dde.drawAxis(0.0f, 0.0f, 0.0f);
+			if (othershow)dde.drawAxis(0.0f, 0.0f, 0.0f);
 
 			dde.push();
-				bx::Aabb aabb =
-				{
-					{  5.0f, 1.0f, 1.0f },
-					{ 10.0f, 5.0f, 5.0f },
-				};
-				dde.setWireframe(true);
-				dde.setColor(intersect(&dde, ray, aabb) ? kSelected : 0xff00ff00);
-				dde.draw(aabb);
+			bx::Aabb aabb =
+			{
+				{  5.0f, 1.0f, 1.0f },
+				{ 10.0f, 5.0f, 5.0f },
+			};
+			{	
+				
+				if (AabbShow) {
+					
+					dde.setWireframe(true);
+					dde.setColor(intersect(&dde, ray, aabb) ? kSelected : 0xff00ff00);
+					dde.draw(aabb);
+				}
+			}
 			dde.pop();
 
 			static float time = 0.0f;
 			time += deltaTime*timeScale;
 
 			bx::Obb obb;
-			bx::mtxRotateX(obb.mtx, time);
-			dde.setWireframe(true);
-			dde.setColor(intersect(&dde, ray, obb) ? kSelected : 0xffffffff);
-			dde.draw(obb);
+			if (othershow) {
+				bx::mtxRotateX(obb.mtx, time);
+				dde.setWireframe(true);
+				dde.setColor(intersect(&dde, ray, obb) ? kSelected : 0xffffffff);
+				dde.draw(obb);
+			}
 
 			bx::mtxSRT(obb.mtx, 1.0f, 1.0f, 1.0f, time*0.23f, time, 0.0f, 3.0f, 0.0f, 0.0f);
 
 			dde.push();
+			if (othershow) {
 				bx::toAabb(aabb, obb);
 				dde.setWireframe(true);
 				dde.setColor(0xff0000ff);
 				dde.draw(aabb);
+			}
 			dde.pop();
 
-			dde.setWireframe(false);
-			dde.setColor(intersect(&dde, ray, obb) ? kSelected : 0xffffffff);
-			dde.draw(obb);
+			if(othershow){
+				dde.setWireframe(false);
+				dde.setColor(intersect(&dde, ray, obb) ? kSelected : 0xffffffff);
+				dde.draw(obb);
+			}
 
 			dde.setColor(0xffffffff);
 
 			dde.push();
 			{
-				float bunny[16];
-				bx::mtxSRT(bunny, 0.03f, 0.03f, 0.03f, 0.0f, 0.0f, 0.0f, -3.0f, 0.0f, 0.0f);
+				if (rabbit) {
+					float bunny[16];
+					bx::mtxSRT(bunny, 0.03f, 0.03f, 0.03f, 0.0f, 0.0f, 0.0f, -3.0f, 0.0f, 0.0f);
 
-				dde.setTransform(bunny);
-				const bool wireframe = bx::mod(time, 2.0f) > 1.0f;
-				dde.setWireframe(wireframe);
-				dde.setColor(wireframe ? 0xffff00ff : 0xff00ff00);
-				dde.draw(m_bunny);
-				dde.setTransform(NULL);
+					dde.setTransform(bunny);
+					dde.setWireframe(rbWf);
+					dde.setColor(rbWf ? 0xffff00ff : 0xff00ff00);
+					dde.draw(m_bunny);
+					dde.setTransform(NULL);
+				}
+
+				if (prmShow) {
+					float myShape[16];
+					bx::mtxSRT(myShape, 1, 1, 1,  xrotation, yrotation, zrotation,1.0f, 1.0f, 1.0f);
+					dde.setTransform(myShape);
+					dde.setWireframe(false);
+					dde.draw(m_myShape);
+					dde.setTransform(NULL);
+				}
+				
 			}
 			dde.pop();
 
-			{
+			if(othershow){
 				const bx::Vec3 normal = { 0.0f,  1.0f, 0.0f };
 				const bx::Vec3 pos    = { 0.0f, -2.0f, 0.0f };
 
@@ -1017,39 +1207,47 @@ public:
 			dde.drawFrustum(mtxVp);
 
 			dde.push();
-				bx::Sphere sphere = { { 0.0f, 5.0f, 0.0f }, 1.0f };
-				dde.setColor(intersect(&dde, ray, sphere) ? kSelected : 0xfff0c0ff);
-				dde.setWireframe(true);
-				dde.setLod(3);
-				dde.draw(sphere);
-				dde.setWireframe(false);
-
-				sphere.center.x = -2.0f;
-				dde.setColor(intersect(&dde, ray, sphere) ? kSelected : 0xc0ffc0ff);
-				dde.setLod(2);
-				dde.draw(sphere);
-
-				sphere.center.x = -4.0f;
-				dde.setColor(intersect(&dde, ray, sphere) ? kSelected : 0xa0f0ffff);
-				dde.setLod(1);
-				dde.draw(sphere);
-
-				sphere.center.x = -6.0f;
-				dde.setColor(intersect(&dde, ray, sphere) ? kSelected : 0xffc0ff00);
-				dde.setLod(0);
-				dde.draw(sphere);
+			{
+					bx::Sphere sphere = { { 0.0f, 5.0f, 0.0f }, 1.0f };
+					if (sp3) {
+						dde.setColor(intersect(&dde, ray, sphere) ? kSelected : 0xfff0c0ff);
+						dde.setWireframe(true);
+						dde.setLod(3);
+						dde.draw(sphere);
+						dde.setWireframe(false);
+					}
+					if (sp2) {
+						sphere.center.x = -2.0f;
+						dde.setColor(intersect(&dde, ray, sphere) ? kSelected : 0xc0ffc0ff);
+						dde.setLod(2);
+						dde.draw(sphere);
+					}
+				
+					if (sp1) {
+						sphere.center.x = -4.0f;
+						dde.setColor(intersect(&dde, ray, sphere) ? kSelected : 0xa0f0ffff);
+						dde.setLod(1);
+						dde.draw(sphere);
+					}
+					if (sp0) {
+						sphere.center.x = -6.0f;
+						dde.setColor(intersect(&dde, ray, sphere) ? kSelected : 0xffc0ff00);
+						dde.setLod(0);
+						dde.draw(sphere);
+					}
+			}
 			dde.pop();
 
 			dde.setColor(0xffffffff);
 
 			dde.push();
-			{
-				const bx::Vec3 normal = {  0.0f, 0.0f, 1.0f };
+			if (othershow) {
+				bx::Vec3 normal = { 0.0f, 0.0f, 1.0f };
 				const bx::Vec3 center = { -8.0f, 0.0f, 0.0f };
 				dde.push();
-					dde.setStipple(true, 1.0f, time*0.1f);
-					dde.setColor(0xff0000ff);
-					dde.drawCircle(normal, center, 1.0f, 0.5f + bx::sin(time*10.0f) );
+				dde.setStipple(true, 1.0f, time * 0.1f);
+				dde.setColor(0xff0000ff);
+				dde.drawCircle(normal, center, 1.0f, 0.5f + bx::sin(time * 10.0f));
 				dde.pop();
 
 				dde.setSpin(time);
@@ -1058,88 +1256,103 @@ public:
 			dde.pop();
 
 			dde.push();
-				dde.setStipple(true, 1.0f, -time*0.1f);
+			if (othershow)
+			{
+				dde.setStipple(true, 1.0f, -time * 0.1f);
 				dde.drawCircle(Axis::Z, -8.0f, 0.0f, 0.0f, 1.25f, 2.0f);
+			}
 			dde.pop();
 
 			dde.push();
-				dde.setLod(UINT8_MAX);
+				dde.setLod((uint8_t)lod);
 
 				dde.push();
-					dde.setSpin(time*0.3f);
+				{
+					if(foo)
 					{
-						bx::Cone cone =
+						dde.setSpin(time * 0.3f);
 						{
-							{ -11.0f, 4.0f,  0.0f },
-							{ -13.0f, 6.0f,  1.0f },
-							1.0f
-						};
+							bx::Cone cone =
+							{
+								{ -11.0f, 4.0f,  0.0f },
+								{ -13.0f, 6.0f,  1.0f },
+								1.0f
+							};
 
-						bx::Cylinder cylinder =
-						{
-							{  -9.0f, 2.0f, -1.0f },
-							{ -11.0f, 4.0f,  0.0f },
-							0.5f
-						};
+							bx::Cylinder cylinder =
+							{
+								{  -9.0f, 2.0f, -1.0f },
+								{ -11.0f, 4.0f,  0.0f },
+								0.5f
+							};
 
-						dde.setColor(false
-							|| intersect(&dde, ray, cone)
-							|| intersect(&dde, ray, cylinder)
-							? kSelected
-							: 0xffffffff
+							dde.setColor(false
+								|| intersect(&dde, ray, cone)
+								|| intersect(&dde, ray, cylinder)
+								? kSelected
+								: 0xffffffff
 							);
 
-						dde.draw(cone);
-						dde.draw(cylinder);
+							dde.draw(cone);
+							dde.draw(cylinder);
+						}
 					}
+				}
 				dde.pop();
 
 				{
 					dde.setLod(0);
-					bx::Capsule capsule =
+					if(capsuleShow)
 					{
-						{  0.0f, 7.0f, 0.0f },
-						{ -6.0f, 7.0f, 0.0f },
-						0.5f
-					};
-					dde.setColor(intersect(&dde, ray, capsule) ? kSelected : 0xffffffff);
-					dde.draw(capsule);
+						bx::Capsule capsule =
+						{
+							{  0.0f, 7.0f, 0.0f },
+							{ -6.0f, 7.0f, 0.0f },
+							0.5f
+						};
+						dde.setColor(intersect(&dde, ray, capsule) ? kSelected : 0xffffffff);
+						dde.draw(capsule);
+					}
 				}
 			dde.pop();
 
 			dde.push();
+			float mtx[16];
+			bx::mtxSRT(mtx
+				, 1.0f, 1.0f, 1.0f
+				, 0.0f, time, time * 0.53f
+				, -10.0f, 1.0f, 10.0f
+			);
 
-				float mtx[16];
-				bx::mtxSRT(mtx
-					, 1.0f, 1.0f, 1.0f
-					, 0.0f, time, time*0.53f
-					, -10.0f, 1.0f, 10.0f
-					);
-
-				bx::Cylinder cylinder =
-				{
-					{ -10.0f, 1.0f, 10.0f },
-					{   0.0f, 0.0f,  0.0f },
-					1.0f
-				};
+			bx::Cylinder cylinder =
+			{
+				{ -10.0f, 1.0f, 10.0f },
+				{   0.0f, 0.0f,  0.0f },
+				1.0f
+			};
+			if(othershow){
+				
 
 				cylinder.end = bx::mul({ 0.0f, 4.0f, 0.0f }, mtx);
 				dde.setColor(intersect(&dde, ray, cylinder) ? kSelected : 0xffffffff);
 				dde.draw(cylinder);
+			}
 
 				dde.push();
+				if (othershow) {
 					toAabb(aabb, cylinder);
 					dde.setWireframe(true);
 					dde.setColor(0xff0000ff);
 					dde.draw(aabb);
+				}
 				dde.pop();
 
 			dde.pop();
 
-			dde.drawOrb(-11.0f, 0.0f, 0.0f, 1.0f);
+			if (othershow) dde.drawOrb(-11.0f, 0.0f, 0.0f, 1.0f);
 
 			dde.push();
-				{
+			if (othershow) {
 					constexpr uint32_t colorA[] =
 					{
 						0xffffffff,
@@ -1216,6 +1429,7 @@ public:
 
 	SpriteHandle   m_sprite;
 	GeometryHandle m_bunny;
+	GeometryHandle m_myShape;
 
 	int64_t m_timeOffset;
 
@@ -1223,6 +1437,13 @@ public:
 	uint32_t m_height;
 	uint32_t m_debug;
 	uint32_t m_reset;
+	bool sp0 = false;
+	bool sp1 = false;
+	bool sp2 = false;
+	bool sp3 = false;
+	bool rabbit = false;
+	bool rbWf = false;
+	bool foo = false;
 };
 
 } // namespace
