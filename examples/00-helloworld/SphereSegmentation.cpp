@@ -155,7 +155,7 @@ namespace segment_mgr
 		float div = length - (this->radius + parm.bottom);
 		uint16_t y = (uint16_t)(div / parm.cellHeight);
 
-		auto&& pos = listData[CellIdGetIndice(id)].centerPos;
+		auto&& pos = listData[CellIdGetIndice(id)].centerPos;//why
 		return CellPos3D(id.tileId, id.x, y, id.z);
 	}
 
@@ -210,7 +210,7 @@ namespace segment_mgr
 			dis = radius * acos(cos);
 			break;
 		}
-		case kSphericalManhattan:
+		case kSphericalManhattan://why do not use cell id&tile to calculate or using longgitude and latitude
 		{
 			glm::vec3 p1 = c1.centerPos;
 			glm::vec3 p2 = c2.centerPos;
@@ -253,7 +253,7 @@ namespace segment_mgr
 		return dis;
 	}
 
-	std::vector<int> SphereSegmentMgr::GetSquareTileIds(const int TileId1, const int TileId2) const
+	std::vector<int> SphereSegmentMgr::GetSquareTileIds(const int TileId1, const int TileId2) const//find minimal ract tile set contain 2 tiles
 	{
 		std::vector<int> result;
 		result.emplace_back(TileId1);
@@ -264,16 +264,16 @@ namespace segment_mgr
 		float minRadians = (float)std::min(2.0f * M_PI * (float)Horizontal1 / (float)tiles[longitude1].size(), 2.0f * M_PI * (float)Horizontal2 / (float)tiles[longitude2].size());
 		float maxRadians = (float)std::max(2.0f * M_PI * (float)Horizontal1 / (float)tiles[longitude1].size(), 2.0f * M_PI * (float)Horizontal2 / (float)tiles[longitude2].size());
 
-		bool rerverse = false;
+		bool reverse = false;
 		float durationRadians = maxRadians - maxRadians;
 
 		if (durationRadians > M_PI)
-			rerverse = true;
+			reverse = true;
 
-		int minLongitudeIndex = std::min(longitude1, longitude2);
-		int maxLongitudeIndex = std::max(longitude1, longitude2);
+		int minLatitudeIndex = std::min(longitude1, longitude2);
+		int maxLatitudeIndex = std::max(longitude1, longitude2);
 
-		auto vectorBool = [](const std::vector<Tile>& v1, std::vector<int>& v2) -> std::vector<int>
+		auto vectorBool = [](const std::vector<Tile>& v1, std::vector<int>& v2) -> std::vector<int>//filter v1 element  caontain by v2
 		{
 			std::vector<int> result;
 			for (auto&& i : v1)
@@ -286,12 +286,12 @@ namespace segment_mgr
 			return result;
 		};
 
-		for (int i = minLongitudeIndex; i <= maxLongitudeIndex; i++)
+		for (int i = minLatitudeIndex; i <= maxLatitudeIndex; i++)
 		{
 			int index;
 			for (index = 0; index < (int)tiles[i].size(); index++)
 			{
-				if (2.0f * M_PI * index / (float)tiles[i].size() >= minRadians)
+				if (2.0f * M_PI * index / (float)tiles[i].size() >= minRadians)//meaning for this?
 				{
 					index--;
 					index = std::clamp(index, 0, (int)tiles[i].size() - 1);
@@ -308,14 +308,14 @@ namespace segment_mgr
 					h -= tiles[i].size();
 				tempResult.emplace_back(tiles[i][h].tileIndex);
 			}
-			if (rerverse) tempResult = vectorBool(tiles[i], tempResult);
+			if (reverse) tempResult = vectorBool(tiles[i], tempResult);
 
 			result.insert(result.end(), tempResult.begin(), tempResult.end());
 		}
 		return result;
 	}
 
-	std::vector<int> SphereSegmentMgr::GetTriangleTileIds(const glm::vec3& p1, const glm::vec3& p2, const glm::vec3& p3, const glm::vec3& center, const glm::vec3& vecDir) const
+	std::vector<int> SphereSegmentMgr::GetTriangleTileIds(const glm::vec3& p1, const glm::vec3& p2, const glm::vec3& p3, const glm::vec3& center, const glm::vec3& vecDir) const //unused?
 	{
 		std::vector<int> result;
 		int Tile1 = GetTileIndexFromWorldPos(p1, center);
@@ -338,10 +338,10 @@ namespace segment_mgr
 		return result;
 	}
 
-	int SphereSegmentMgr::GetSpanListIndexFromWorldPos(float x, float y, float z) const
+	int SphereSegmentMgr::GetSpanListIndexFromWorldPos(float x, float y, float z) const//return cell id from tile index and cartesian coordinates;
 	{
-		auto&& [longitudeIndex, patchIndex] = Get2TileIndexFromWorldPos(x, y, z);
-		const Tile& tile = tiles[longitudeIndex][patchIndex];
+		auto&& [latitudeIndex, longitudeIndex] = Get2TileIndexFromWorldPos(x, y, z);
+		const Tile& tile = tiles[latitudeIndex][longitudeIndex];
 		glm::vec3 axis_y = glm::normalize(glm::cross(tile.axis_u, tile.axis_v));
 		glm::mat4 matrix = glm::mat4(glm::vec4(tile.axis_u, 0), glm::vec4(axis_y, 0), glm::vec4(tile.axis_v, 0), glm::vec4(0, 0, 0, 1));
 		matrix = glm::transpose(matrix);
@@ -375,33 +375,33 @@ namespace segment_mgr
 		glm::mat4 rotate(1.0f);
 		if (e == EdgeNeighborDirect::kNegX)
 		{
-			int longitudeIndex = GetLongitudeIndex(Center.x, Center.y, Center.z);
-			float HorizontalRadiansStride = 360.0f / float(tiles[longitudeIndex].size() * tileSize) / 180 * float(M_PI);
+			int latitude = GetLatitudeIndex(Center.x, Center.y, Center.z);
+			float HorizontalRadiansStride = 360.0f / float(tiles[latitude].size() * tileSize) / 180 * float(M_PI);
 			rotate = glm::rotate(rotate, HorizontalRadiansStride, glm::vec3(0, 1, 0));
 			glm::vec3 pos = rotate * glm::vec4(Center, 1.0f);
 			return GetSpanListIndexFromWorldPos(pos.x, pos.y, pos.z);
 		}
 
 		if (e == EdgeNeighborDirect::kX) {
-			int longitudeIndex = GetLongitudeIndex(Center.x, Center.y, Center.z);
-			float HorizontalRadiansStride = 360.0f / float(tiles[longitudeIndex].size() * tileSize) / 180 * float(M_PI);
+			int latitude = GetLatitudeIndex(Center.x, Center.y, Center.z);
+			float HorizontalRadiansStride = 360.0f / float(tiles[latitude].size() * tileSize) / 180 * float(M_PI);
 			rotate = glm::rotate(rotate, HorizontalRadiansStride, glm::vec3(0, -1, 0));
 			glm::vec3 pos = rotate * glm::vec4(Center, 1.0f);
 			return GetSpanListIndexFromWorldPos(pos.x, pos.y, pos.z);
 		}
 
 		if (e == EdgeNeighborDirect::kNegZ) {
-			float LongitudeAngleStride = float(M_PI) / (float(tiles.size() - 1) * float(tileSize));
+			float LatitudeAngleStride = float(M_PI) / (float(tiles.size() - 1) * float(tileSize));
 			glm::vec3 rotateAxis = glm::normalize(glm::cross((Center), glm::vec3(0, 1, 0)));
-			rotate = glm::rotate(rotate, LongitudeAngleStride, rotateAxis);
+			rotate = glm::rotate(rotate, LatitudeAngleStride, rotateAxis);
 			glm::vec3 pos = rotate * glm::vec4(Center, 1.0f);
 			return GetSpanListIndexFromWorldPos(pos.x, pos.y, pos.z);
 		}
 
 		if (e == EdgeNeighborDirect::kZ) {
-			float LongitudeAngleStride = float(M_PI) / (float(tiles.size() - 1) * float(tileSize));
+			float LatitudeAngleStride = float(M_PI) / (float(tiles.size() - 1) * float(tileSize));
 			glm::vec3 rotateAxis = glm::normalize(glm::cross((Center), glm::vec3(0, -1, 0)));
-			rotate = glm::rotate(rotate, LongitudeAngleStride, rotateAxis);
+			rotate = glm::rotate(rotate, LatitudeAngleStride, rotateAxis);
 			glm::vec3 pos = rotate * glm::vec4(Center, 1.0f);
 			return GetSpanListIndexFromWorldPos(pos.x, pos.y, pos.z);
 		}
@@ -411,59 +411,59 @@ namespace segment_mgr
 	std::tuple<int, int> SphereSegmentMgr::Get2TileIndexFromWorldPos(float x, float y, float z)const
 	{
 		glm::vec3 PositionVector = { x, y, z };
-		int longitudeIndex = GetLongitudeIndex(x, y, z);
-		if (longitudeIndex == 0 || longitudeIndex == (int)(tiles.size() - 1)) {
-			return std::make_tuple(longitudeIndex, 0);
+		int latitudeIndex = GetLatitudeIndex(x, y, z);
+		if (latitudeIndex == 0 || latitudeIndex == (int)(tiles.size() - 1)) {
+			return std::make_tuple(latitudeIndex, 0);
 		}
-		int patchIndex = 0;
+		int longitudeIndex = 0;
 		float dot1 = glm::dot(glm::normalize(PositionVector), glm::vec3(0, 1, 0));
 		float dot2 = glm::dot(glm::normalize(glm::vec3(PositionVector.x, 0, PositionVector.z)), glm::vec3(1, 0, 0));
 		float radians = (float)(PositionVector.z >= 0 ? acos(dot2) : 2 * M_PI - acos(dot2));
-		float HorizontalStride = 2.0f * float(M_PI) / float(tiles[longitudeIndex].size());
-		float radius2 = std::abs(radius * sin(acos(dot1)));
+		float HorizontalStride = 2.0f * float(M_PI) / float(tiles[latitudeIndex].size());
+		float radius2 = std::abs(radius * sin(acos(dot1)));//get the radius for the section circle
 		float stride = atan((GetCellSize() * (float)tileSize / 2.0f) / radius2);
 
 		if ((2 * M_PI - radians) < stride / 2.0)
 		{
-			return std::make_tuple(longitudeIndex, 0);
+			return std::make_tuple(latitudeIndex, 0);
 		}
 		else
 		{
 			int tempIndex = (int)(radians / HorizontalStride);
 			float right = float(tempIndex + 1) * HorizontalStride;
-			patchIndex = (right - radians) < stride ? tempIndex + 1 : tempIndex;
+			longitudeIndex = (right - radians) < stride ? tempIndex + 1 : tempIndex;
 		}
-		if (patchIndex == (int)tiles[longitudeIndex].size())
+		if (longitudeIndex == (int)tiles[latitudeIndex].size())
 		{
-			patchIndex = 0;
+			longitudeIndex = 0;
 		}
-		return std::make_tuple(longitudeIndex, patchIndex);
+		return std::make_tuple(latitudeIndex, longitudeIndex);
 	}
 
-	int SphereSegmentMgr::GetLongitudeIndex(float x, float y, float z) const
+	int SphereSegmentMgr::GetLatitudeIndex(float x, float y, float z) const
 	{
 		glm::vec3 PositionVector = { x, y, z };
 
-		float LongitudeAngleStride = M_PI / float(tiles.size() - 1);
+		float LatitudeAngleStride = M_PI / float(tiles.size() - 1);
 		float dot = glm::dot(glm::normalize(PositionVector), glm::vec3(0, -1, 0));
 		float angle = acos(dot);
 
-		int longitudeIndex = 0;
+		int latitudeIndex = 0;
 		int patchIndex = 0;
 
-		if ((M_PI - angle) < atan((GetCellSize() * (float)tileSize / 2.0f) / radius))
+		if ((M_PI - angle) < atan((GetCellSize() * (float)tileSize / 2.0f) / radius))//check if point at top tile
 		{
-			longitudeIndex = (int)(tiles.size() - 1);
+			latitudeIndex = (int)(tiles.size() - 1);
 		}
 		else
 		{
-			int tempIndex = (int)(angle / LongitudeAngleStride);
+			int tempIndex = (int)(angle / LatitudeAngleStride);
 
-			float right = LongitudeAngleStride * float(tempIndex + 1);
+			float right = LatitudeAngleStride * float(tempIndex + 1);
 
-			longitudeIndex = (right - angle) < atan((GetCellSize() * (float)tileSize / 2.0f) / radius) ? tempIndex + 1 : tempIndex;
+			latitudeIndex = (right - angle) < atan((GetCellSize() * (float)tileSize / 2.0f) / radius) ? tempIndex + 1 : tempIndex;//rounding latitude
 		}
-		return longitudeIndex;
+		return latitudeIndex;
 	}
 
 

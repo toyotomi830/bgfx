@@ -222,12 +222,12 @@ namespace segment_mgr
 		auto&& [longitude1, Horizontal1] = Get2TileIndexFrom1TileIndex(TileId1);
 		auto&& [longitude2, Horizontal2] = Get2TileIndexFrom1TileIndex(TileId2);
 
-		int minLongitudeIndex = std::min(longitude1, longitude2);
-		int maxLongitudeIndex = std::max(longitude1, longitude2);
+		int minLatitudeIndex = std::min(longitude1, longitude2);
+		int maxLatitudeIndex = std::max(longitude1, longitude2);
 
 		int minHorizontalIndex = std::min(Horizontal1, Horizontal2);
 		int maxHorizontalIndex = std::max(Horizontal1, Horizontal2);
-		for (int i = minLongitudeIndex; i <= maxLongitudeIndex; i++)
+		for (int i = minLatitudeIndex; i <= maxLatitudeIndex; i++)
 		{
 			for (int j = minHorizontalIndex; j < maxHorizontalIndex; j++)
 			{
