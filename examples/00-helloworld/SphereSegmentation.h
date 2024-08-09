@@ -32,7 +32,7 @@ namespace segment_mgr
 		std::tuple<int, int> Get2TileIndexFromWorldPos(float x, float y, float z) const final;
 
 		//------------------------------None Virtual func
-		int GetLatitudeIndex(float x, float y, float z) const;
+		int GetLatitudeIndex(float x, float y, float z) const;//get angle with y axis
 		/*
 		 * 给予世界空间下的x,y,z点，获取Tile二维数组的索引(本球中)
 		 */

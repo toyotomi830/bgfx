@@ -23,7 +23,7 @@ namespace segment_mgr
 			float y = sinf(rad);
 			float r = cosf(rad);
 			float perimeter = r * float(M_PI) * 2;
-			if (perimeter <= unitRadianSize_) {
+			if (perimeter <= unitRadianSize_) {//polar point
 				tiles[i].resize(1);
 				Tile& t = tiles[i][0];
 				if (degree > 0) {
@@ -44,7 +44,7 @@ namespace segment_mgr
 				int NUM = int(perimeter / unitRadianSize_ + 4.0f);
 				tiles[i].resize(NUM);
 				float da = float(M_PI) * 2.0f / NUM;
-				for (int j = 0; j < NUM; ++j) {
+				for (int j = 0; j < NUM; ++j) {//put tile on each latitude
 					float lat = da * j;
 					float x = r * cosf(lat);
 					float z = r * sinf(lat);
@@ -83,7 +83,7 @@ namespace segment_mgr
 				}
 			}
 		}
-		for (auto&& i : tiles)
+		for (auto&& i : tiles)//calculate each cell's neighbors
 		{
 			for (auto&& j : i)
 			{
@@ -210,7 +210,7 @@ namespace segment_mgr
 			dis = radius * acos(cos);
 			break;
 		}
-		case kSphericalManhattan://why do not use cell id&tile to calculate or using longgitude and latitude
+		case kSphericalManhattan://why not use cell id&tile to calculate or using longgitude and latitude
 		{
 			glm::vec3 p1 = c1.centerPos;
 			glm::vec3 p2 = c2.centerPos;
