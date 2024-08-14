@@ -8,7 +8,7 @@
 
 namespace voxelFuncs
 {
-	/*
+	
 	std::vector<std::shared_ptr<wayNode>> findWays(const Span& sp1, const Span& sp2, SegmentMgr& sphere)
 	{
 		std::shared_ptr<wayNode> start = std::make_shared<wayNode>(0, 0, 0);
@@ -59,11 +59,12 @@ namespace voxelFuncs
 			}
 
 			std::vector<std::shared_ptr<wayNode>> neighbors;
+			auto cellList = sphere.listData;
 			auto&& instance = SpanData::getInstance();
-			for (int i = 0; i < instance.Data[current_node->sp->ListIndex].neighborsIndex.size(); i++)
+			for (int i = 0; i < cellList[current_node->sp->ListIndex].neighborsIndex.size(); i++)
 			{
-				const SpanList& List = instance.Data[current_node->sp->ListIndex];
-				const SpanList& neighborsList = instance.Data[List.neighborsIndex[i]];
+				const auto List = cellList[current_node->sp->ListIndex].neighborsIndex;
+				const SpanList& neighborsList = instance.Data[List[i]];
 				for (int j = 0; j < neighborsList.Spans.size(); j++)
 				{
 					auto&& searchSpan = neighborsList.Spans[j];
@@ -76,6 +77,8 @@ namespace voxelFuncs
 					neighbors.emplace_back(newNode);
 				}
 			}
+
+
 
 			for (std::shared_ptr<wayNode> n : neighbors)
 			{
@@ -91,7 +94,7 @@ namespace voxelFuncs
 					continue;
 
 				n->g = current_node->g + sphere.GetCellSize();
-				n->h = getSpanDistance(*n->sp, *current_node->sp, sphere);
+				n->h = getSpanDistance(*n->sp, *end->sp, sphere);
 				//n->g = current_node->g + getSpantDistanceManhattan(*n->sp, *current_node->sp, sphere);
 				//n->h = getSpantDistanceManhattan(*n->sp, *end->sp, sphere);
 				n->f = n->g + n->h;
@@ -104,11 +107,11 @@ namespace voxelFuncs
 		return std::vector<std::shared_ptr<wayNode>>();
 
 	}
-	
-	Span getRandomSpan(SegmentMgr& Sphere)
+
+	Span getRandomSpan(const SegmentMgr& Sphere)
 	{
-		int beginIndex = SpanData::getInstance().Dictionary[Sphere.SphereId].first;
-		int endIndex = SpanData::getInstance().Dictionary[Sphere.SphereId].second;
+		int beginIndex = SpanData::getInstance().Data[0].TileIndex;
+		int endIndex = SpanData::getInstance().Data[SpanData::getInstance().Data.size()-1].TileIndex;
 		int range = endIndex - beginIndex + 1;
 		int RandomListIndex;
 		int RandomSpanIndex;
@@ -124,7 +127,7 @@ namespace voxelFuncs
 		}
 		return  SpanData::getInstance().Data[RandomListIndex].Spans[RandomSpanIndex];
 	}
-	*/
+	
 
 
 	void ReCastSphereVoxelization(const std::unique_ptr<SceneMgr>& dataPtr, const std::shared_ptr<segment_mgr::SegmentMgr> Sphere, int TileSize, float cellStride, float cellHeight, float minHeight, float maxHeight)
@@ -246,7 +249,7 @@ namespace voxelFuncs
 		}
 	}
 
-	/*
+	
 	float getSpanDistance(const Span& s1, const Span& s2, SegmentMgr& sphere)
 	{
 		auto&& instance = SpanData::getInstance();
@@ -262,8 +265,8 @@ namespace voxelFuncs
 		glm::vec3 p2 = instance.Data[s2.ListIndex].CenteralWorldPos + (axis_y2 * s2.top);
 		
 
-		glm::vec3 p1 = instance.Data[s1.ListIndex].CenteralWorldPos;
-		glm::vec3 p2 = instance.Data[s2.ListIndex].CenteralWorldPos;
+		p1 = instance.Data[s1.ListIndex].CenteralWorldPos;
+		p2 = instance.Data[s2.ListIndex].CenteralWorldPos;
 		float radians1 = asin(p1.y / 1500.0f);
 		float radians2 = asin(p2.y / 1500.0f);
 
@@ -298,7 +301,7 @@ namespace voxelFuncs
 		return dis;
 		//return glm::distance(p1, p2);
 	}
-	*/
+
 	/*
 	float getSpantDistanceManhattan(const Span& s1, const Span& s2, SegmentMgr& sphere)
 	{

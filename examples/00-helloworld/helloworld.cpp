@@ -305,7 +305,7 @@ namespace
 				cameraPosNow[0] = cameraGetPosition().x;
 				cameraPosNow[1] = cameraGetPosition().y;
 				cameraPosNow[2] = cameraGetPosition().z;
-				/*
+				
 				Span f;
 				Span t;
 				if (ImGui::Button("Gen Random Point"))
@@ -315,14 +315,14 @@ namespace
 					while (way.empty())
 					{
 						
-						f = voxelFuncs::getRandomSpan(Spheres[0]);
-						t = voxelFuncs::getRandomSpan(Spheres[0]);
-						way = voxelFuncs::findWays(f, t, Spheres[0]);
+						f = voxelFuncs::getRandomSpan(*Spheres[0]);
+						t = voxelFuncs::getRandomSpan(*Spheres[0]);
+						way = voxelFuncs::findWays(f, t, *Spheres[0]);
 						if (way.empty())
 							continue;
 
-						const Tile& fromTile = Spheres[0].GetTileByIndex(SpanData::getInstance().Data[f.ListIndex].TileIndex);
-						const Tile& toTile = Spheres[0].GetTileByIndex(SpanData::getInstance().Data[t.ListIndex].TileIndex);
+						const segment_mgr::Tile& fromTile = Spheres[0]->GetTileByIndex(SpanData::getInstance().Data[f.ListIndex].TileIndex);
+						const segment_mgr::Tile& toTile = Spheres[0]->GetTileByIndex(SpanData::getInstance().Data[t.ListIndex].TileIndex);
 						glm::vec3 axis_y1 = glm::normalize(glm::cross(fromTile.axis_u, fromTile.axis_v));
 						glm::vec3 axis_y2 = glm::normalize(glm::cross(toTile.axis_u, toTile.axis_v));
 
@@ -332,36 +332,36 @@ namespace
 					
 					
 					way.swap(std::vector<std::shared_ptr<voxelFuncs::wayNode>>());
-					f = voxelFuncs::getRandomSpan(Spheres[0]);
-					t = voxelFuncs::getRandomSpan(Spheres[0]);
-					way = voxelFuncs::findWays(f, t, Spheres[0]);
+					f = voxelFuncs::getRandomSpan(*Spheres[0]);
+					t = voxelFuncs::getRandomSpan(*Spheres[0]);
+					way = voxelFuncs::findWays(f, t, *Spheres[0]);
 
-					const Tile& fromTile = Spheres[0].GetTileByIndex(SpanData::getInstance().Data[f.ListIndex].TileIndex);
-					const Tile& toTile = Spheres[0].GetTileByIndex(SpanData::getInstance().Data[t.ListIndex].TileIndex);
+					const segment_mgr::Tile& fromTile = Spheres[0]->GetTileByIndex(SpanData::getInstance().Data[f.ListIndex].TileIndex);
+					const segment_mgr::Tile& toTile = Spheres[0]->GetTileByIndex(SpanData::getInstance().Data[t.ListIndex].TileIndex);
 					glm::vec3 axis_y1 = glm::normalize(glm::cross(fromTile.axis_u, fromTile.axis_v));
 					glm::vec3 axis_y2 = glm::normalize(glm::cross(toTile.axis_u, toTile.axis_v));
 
 					fromPos = SpanData::getInstance().Data[f.ListIndex].CenteralWorldPos + (axis_y1 * f.top);
 					toPos = SpanData::getInstance().Data[t.ListIndex].CenteralWorldPos + (axis_y2 * t.top);									
 				}
-				*/
 				
-				/*
+				
+				
 				if (ImGui::Button("Reverse"))
 				{
 
 					way.swap(std::vector<std::shared_ptr<voxelFuncs::wayNode>>());
-					way = voxelFuncs::findWays(t, f, Spheres[0]);
+					way = voxelFuncs::findWays(t, f, *Spheres[0]);
 
-					const Tile& fromTile = Spheres[0].GetTileByIndex(SpanData::getInstance().Data[t.ListIndex].TileIndex);
-					const Tile& toTile = Spheres[0].GetTileByIndex(SpanData::getInstance().Data[f.ListIndex].TileIndex);
+					const segment_mgr::Tile& fromTile = Spheres[0]->GetTileByIndex(SpanData::getInstance().Data[t.ListIndex].TileIndex);
+					const segment_mgr::Tile& toTile = Spheres[0]->GetTileByIndex(SpanData::getInstance().Data[f.ListIndex].TileIndex);
 					glm::vec3 axis_y1 = glm::normalize(glm::cross(fromTile.axis_u, fromTile.axis_v));
 					glm::vec3 axis_y2 = glm::normalize(glm::cross(toTile.axis_u, toTile.axis_v));
 
 					fromPos = SpanData::getInstance().Data[t.ListIndex].CenteralWorldPos + (axis_y1 * t.top);
 					toPos = SpanData::getInstance().Data[f.ListIndex].CenteralWorldPos + (axis_y2 * f.top);
 				}
-				*/
+				
 
 				ImGui::End();
 				imguiEndFrame();
@@ -417,7 +417,7 @@ namespace
 				DrawAllVoxel(state);
 				//DrawAllVoxelCylinder(state);
 				//DrawAllVoxelSquere(state);
-				//DrawWays(state);
+				DrawWays(state);
 				glm::mat4 m;
 				m = glm::translate(glm::mat4(1.0f), fromPos) * glm::scale(glm::mat4(1.0),glm::vec3(Spheres[0]->GetCellSize()));
 				bgfx::setTransform(glm::value_ptr(m));
@@ -537,7 +537,7 @@ namespace
 		}
 		void DrawWays(const uint64_t& state)
 		{
-			/*
+			
 			
 			DebugDrawEncoder dde;
 			dde.begin(0);
@@ -549,8 +549,8 @@ namespace
 			{
 				dde.push();
 				{
-					const segment_mgr::Tile& fromTile = Spheres[0].GetTileByIndex(instance.Data[way[i]->sp->ListIndex].TileIndex);
-					const segment_mgr::Tile& toTile =   Spheres[0].GetTileByIndex(instance.Data[way[i + 1]->sp->ListIndex].TileIndex);
+					const segment_mgr::Tile& fromTile = Spheres[0]->GetTileByIndex(instance.Data[way[i]->sp->ListIndex].TileIndex);
+					const segment_mgr::Tile& toTile =   Spheres[0]->GetTileByIndex(instance.Data[way[i + 1]->sp->ListIndex].TileIndex);
 					glm::vec3 axis_y1 = glm::normalize(glm::cross(fromTile.axis_u, fromTile.axis_v));
 					glm::vec3 axis_y2 = glm::normalize(glm::cross(toTile.axis_u, toTile.axis_v));
 
@@ -563,7 +563,7 @@ namespace
 			}
 
 			dde.end();
-			*/
+			
 			
 		}
 		entry::MouseState m_mouseState;

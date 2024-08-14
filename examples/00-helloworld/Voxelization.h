@@ -71,13 +71,13 @@ namespace voxelFuncs
 
 
 	//Test Func
-	/*
+	
 	
 	float getSpanDistance(const Span& s1, const Span& s2, SegmentMgr& sphere);
-	float getSpantDistanceManhattan(const Span& s1, const Span& s2, SegmentMgr& sphere);
+	//float getSpantDistanceManhattan(const Span& s1, const Span& s2, SegmentMgr& sphere);
 	std::vector<std::shared_ptr<wayNode>> findWays(const Span& sp1, const Span& sp2, SegmentMgr& sphere);
-	Span getRandomSpan(SegmentMgr& Sphere);
-	*/
+	Span getRandomSpan(const SegmentMgr& Sphere);
+	
 	
 
 }

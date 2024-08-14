@@ -71,7 +71,7 @@ namespace segment_mgr
 		glm::vec3 centerPos;
 		Cell(const glm::vec3& Pos) : centerPos(Pos) {}
 
-	private:
+	//private:
 		// 邻居的索引；
 		std::array<int, 4> neighborsIndex;
 	};
