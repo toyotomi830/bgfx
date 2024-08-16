@@ -99,9 +99,12 @@ namespace segment_mgr
 					for (int z = 0; z < tileSize; z++)
 					{
 						int ListIndexNow = j.tileIndex * tileSize * tileSize + x * tileSize + z;
+						int neighbor;
 						auto&& List = listData[ListIndexNow];
 						if (x != 0)
 						{
+							neighbor = ListIndexNow - 1;
+							//if()
 							List.neighborsIndex[0] = ListIndexNow - 1;
 						}
 						else
@@ -464,6 +467,11 @@ namespace segment_mgr
 			latitudeIndex = (right - angle) < atan((GetCellSize() * (float)tileSize / 2.0f) / radius) ? tempIndex + 1 : tempIndex;//rounding latitude
 		}
 		return latitudeIndex;
+	}
+
+	bool SphereSegmentMgr::CheckConeection(int cellId1, int cellId2)
+	{
+		return false;
 	}
 
 

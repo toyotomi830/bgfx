@@ -1108,33 +1108,34 @@ public:
 				);
 
 			constexpr uint32_t kSelected = 0xff80ffff;
-			constexpr uint32_t kOverlapA = 0xff0000ff;
-			constexpr uint32_t kOverlapB = 0xff8080ff;
+			//constexpr uint32_t kOverlapA = 0xff0000ff;
+			//constexpr uint32_t kOverlapB = 0xff8080ff;
 
 			DebugDrawEncoder dde;
 
 			dde.begin(0);
-			if (othershow)dde.drawAxis(0.0f, 0.0f, 0.0f);
+			//if (othershow)dde.drawAxis(0.0f, 0.0f, 0.0f);
+
+			static float time = 0.0f;
+			time += deltaTime*timeScale;
 
 			dde.push();
+			/*
 			bx::Aabb aabb =
 			{
 				{  5.0f, 1.0f, 1.0f },
 				{ 10.0f, 5.0f, 5.0f },
 			};
-			{	
-				
+			{
+
 				if (AabbShow) {
-					
+
 					dde.setWireframe(true);
 					dde.setColor(intersect(&dde, ray, aabb) ? kSelected : 0xff00ff00);
 					dde.draw(aabb);
 				}
 			}
 			dde.pop();
-
-			static float time = 0.0f;
-			time += deltaTime*timeScale;
 
 			bx::Obb obb;
 			if (othershow) {
@@ -1184,7 +1185,7 @@ public:
 					dde.draw(m_myShape);
 					dde.setTransform(NULL);
 				}
-				
+
 			}
 			dde.pop();
 
@@ -1222,7 +1223,7 @@ public:
 						dde.setLod(2);
 						dde.draw(sphere);
 					}
-				
+
 					if (sp1) {
 						sphere.center.x = -4.0f;
 						dde.setColor(intersect(&dde, ray, sphere) ? kSelected : 0xa0f0ffff);
@@ -1264,38 +1265,44 @@ public:
 			dde.pop();
 
 			dde.push();
+			*/
+			
 				dde.setLod((uint8_t)lod);
 
 				dde.push();
 				{
 					if(foo)
 					{
-						dde.setSpin(time * 0.3f);
+						for (int i = 0; i < 1000; i++)
 						{
-							bx::Cone cone =
+							dde.setSpin(time * 0.3f);
 							{
-								{ -11.0f, 4.0f,  0.0f },
-								{ -13.0f, 6.0f,  1.0f },
-								1.0f
-							};
+								bx::Cone cone =
+								{
+									{ -11.0f+i, 4.0f,  0.0f },
+									{ -13.0f+i, 6.0f,  1.0f },
+									1.0f
+								};
 
-							bx::Cylinder cylinder =
-							{
-								{  -9.0f, 2.0f, -1.0f },
-								{ -11.0f, 4.0f,  0.0f },
-								0.5f
-							};
+								bx::Cylinder cylinder =
+								{
+									{  -9.0f+i, 2.0f, -1.0f },
+									{ -11.0f+i, 4.0f,  0.0f },
+									0.5f
+								};
 
-							dde.setColor(false
-								|| intersect(&dde, ray, cone)
-								|| intersect(&dde, ray, cylinder)
-								? kSelected
-								: 0xffffffff
-							);
+								dde.setColor(false
+									|| intersect(&dde, ray, cone)
+									|| intersect(&dde, ray, cylinder)
+									? kSelected
+									: 0xffffffff
+								);
 
-							dde.draw(cone);
-							dde.draw(cylinder);
+								dde.draw(cone);
+								dde.draw(cylinder);
+							}
 						}
+
 					}
 				}
 				dde.pop();
@@ -1316,7 +1323,8 @@ public:
 				}
 			dde.pop();
 
-			dde.push();
+			/*
+			* dde.push();
 			float mtx[16];
 			bx::mtxSRT(mtx
 				, 1.0f, 1.0f, 1.0f
@@ -1412,6 +1420,8 @@ public:
 				}
 
 			dde.pop();
+			*/
+			
 
 			dde.end();
 

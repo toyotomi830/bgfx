@@ -22,9 +22,10 @@ namespace voxelFuncs
 		std::vector<std::shared_ptr<wayNode>> closed_list;
 
 		open_list.emplace_back(start);
-
-		while (!open_list.empty())
+		int count = 0;
+		while (!open_list.empty()&&count<10000)
 		{
+			count++;
 			std::shared_ptr<wayNode> current_node = open_list[0];
 			int current_index = 0;
 

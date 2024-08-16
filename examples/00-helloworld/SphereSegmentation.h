@@ -33,6 +33,7 @@ namespace segment_mgr
 
 		//------------------------------None Virtual func
 		int GetLatitudeIndex(float x, float y, float z) const;//get angle with y axis
+		bool CheckConeection(int cellId1,int cellId2);
 		/*
 		 * 给予世界空间下的x,y,z点，获取Tile二维数组的索引(本球中)
 		 */

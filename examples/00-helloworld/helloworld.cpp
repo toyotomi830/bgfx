@@ -347,6 +347,7 @@ namespace
 				
 				
 				
+				/*
 				if (ImGui::Button("Reverse"))
 				{
 
@@ -361,6 +362,7 @@ namespace
 					fromPos = SpanData::getInstance().Data[t.ListIndex].CenteralWorldPos + (axis_y1 * t.top);
 					toPos = SpanData::getInstance().Data[f.ListIndex].CenteralWorldPos + (axis_y2 * f.top);
 				}
+				*/
 				
 
 				ImGui::End();
@@ -417,7 +419,28 @@ namespace
 				DrawAllVoxel(state);
 				//DrawAllVoxelCylinder(state);
 				//DrawAllVoxelSquere(state);
-				DrawWays(state);
+				//DrawWays(state);
+
+				DebugDrawEncoder dde;
+				dde.begin(0);
+
+				for (int i = 0; i < 10; i++)
+				{
+					dde.push();
+					{
+						
+						bx::Cylinder cylinder =
+						{
+							{  -9.0f + i, 2.0f, -1.0f },
+							{ -11.0f + i, 4.0f,  0.0f },
+							0.5f
+						};
+						dde.draw(cylinder);
+					}
+					dde.pop();
+				}
+
+				dde.end();
 				glm::mat4 m;
 				m = glm::translate(glm::mat4(1.0f), fromPos) * glm::scale(glm::mat4(1.0),glm::vec3(Spheres[0]->GetCellSize()));
 				bgfx::setTransform(glm::value_ptr(m));
@@ -539,7 +562,7 @@ namespace
 		{
 			
 			
-			DebugDrawEncoder dde;
+			static DebugDrawEncoder dde;
 			dde.begin(0);
 			auto&& instance = SpanData::getInstance();
 			if (way.size() < 1)
@@ -549,15 +572,18 @@ namespace
 			{
 				dde.push();
 				{
-					const segment_mgr::Tile& fromTile = Spheres[0]->GetTileByIndex(instance.Data[way[i]->sp->ListIndex].TileIndex);
-					const segment_mgr::Tile& toTile =   Spheres[0]->GetTileByIndex(instance.Data[way[i + 1]->sp->ListIndex].TileIndex);
-					glm::vec3 axis_y1 = glm::normalize(glm::cross(fromTile.axis_u, fromTile.axis_v));
-					glm::vec3 axis_y2 = glm::normalize(glm::cross(toTile.axis_u, toTile.axis_v));
+					const segment_mgr::Tile fromTile = Spheres[0]->GetTileByIndex(instance.Data[way[i]->sp->ListIndex].TileIndex);
+					const segment_mgr::Tile toTile =   Spheres[0]->GetTileByIndex(instance.Data[way[i + 1]->sp->ListIndex].TileIndex);
+					glm::vec3 axis_y1;
+					axis_y1 = glm::normalize(glm::cross(fromTile.axis_u, fromTile.axis_v));
+					glm::vec3 axis_y2;
+					axis_y2 = glm::normalize(glm::cross(toTile.axis_u, toTile.axis_v));
 
 					glm::vec3 from = instance.Data[way[i]->sp->ListIndex].CenteralWorldPos + (axis_y1 * way[i]->sp->top);
 					glm::vec3 to = instance.Data[way[i+1]->sp->ListIndex].CenteralWorldPos + (axis_y2 * way[i+1]->sp->top);
 					float radius = 2.0f;
-					dde.drawCylinder({ from.x,from.y,from.z }, { to.x,to.y,to.z }, radius);
+					bx::Cylinder cylinder = { { from.x,from.y,from.z }, { to.x,to.y,to.z }, radius };
+					dde.draw(cylinder);
 				}
 				dde.pop();
 			}
