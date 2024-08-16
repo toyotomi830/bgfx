@@ -8,6 +8,7 @@
 #include "glm/gtc/type_ptr.hpp"
 #include <memory>
 #include <array>
+#include "SpanData.h"
 
 #define M_PI 3.1415926535
 
@@ -70,6 +71,7 @@ namespace segment_mgr
 
 		glm::vec3 centerPos;
 		Cell(const glm::vec3& Pos) : centerPos(Pos) {}
+		SpanList spanlist;
 
 	//private:
 		// 邻居的索引；
@@ -115,11 +117,11 @@ namespace segment_mgr
 	protected:
 		int tileSize = 0;
 		float cellSize = 0.0f;
-		std::vector<std::vector<Tile>> tiles;
 		int totalTilesNum = 0;
-		std::vector<CellId> handleData;
+		std::vector<std::vector<Tile>> tiles;
 	public:
 		std::vector<Cell> listData;
+		std::vector<CellId> handleData;
 	public:
 		//------------------------------pure virtual func
 		virtual int GetTileIndexFromWorldPos(const glm::vec3& xyz, const glm::vec3& center = {}, const glm::vec3& vecDir = {}) const = 0;
@@ -140,6 +142,10 @@ namespace segment_mgr
 		inline int GetTotalTileNums() const { return totalTilesNum; }
 		inline int GetTileSize() const { return tileSize; }
 		inline float GetCellSize() const { return cellSize; }
+		inline int CellIdGetIndice(const CellId& handle) const
+		{
+			return handle.tileId * tileSize * tileSize + handle.x * tileSize + handle.z;
+		}
 	protected:
 		//------------------------------pure virtual func
 		virtual int GetSpanListIndexFromWorldPos(float x, float y, float z)const = 0;
@@ -150,10 +156,7 @@ namespace segment_mgr
 		//------------------------------None Virtual func
 		std::tuple<int, int> Get2TileIndexFrom1TileIndex(int Index) const;
 
-		inline int CellIdGetIndice(const CellId& handle) const
-		{
-			return handle.tileId * tileSize * tileSize + handle.x * tileSize + handle.z;
-		}
+		
 
 	};
 }

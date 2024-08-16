@@ -9,13 +9,16 @@
 namespace voxelFuncs
 {
 	
-	std::vector<std::shared_ptr<wayNode>> findWays(const Span& sp1, const Span& sp2, SegmentMgr& sphere)
+	std::vector<std::shared_ptr<wayNode>> findWays(const CellId startC,const int startS, const CellId endC,const int endS, SegmentMgr& sphere)
 	{
+		CellPos3D startCell=sphere.GetCellId3DFromWorldPos();
 		std::shared_ptr<wayNode> start = std::make_shared<wayNode>(0, 0, 0);
-		start->sp = &sp1;
+		start->cell = sphere.listData[sphere.CellIdGetIndice(startC)];
+		start->spanIndex = startS;
 
 		std::shared_ptr<wayNode> end = std::make_shared<wayNode>(0, 0, 0);
-		end->sp = &sp2;
+		end->cell = sphere.listData[sphere.CellIdGetIndice(endC)];
+		end->spanIndex = endS;
 
 		int SearchCount = 0;
 		std::vector<std::shared_ptr<wayNode>> open_list;
@@ -61,10 +64,10 @@ namespace voxelFuncs
 
 			std::vector<std::shared_ptr<wayNode>> neighbors;
 			auto cellList = sphere.listData;
-			auto&& instance = SpanData::getInstance();
+			auto currentCell = cellList[current_node->sp->ListIndex];
 			for (int i = 0; i < cellList[current_node->sp->ListIndex].neighborsIndex.size(); i++)
 			{
-				const auto List = cellList[current_node->sp->ListIndex].neighborsIndex;
+				/*const auto List = cellList[current_node->sp->ListIndex].neighborsIndex;
 				const SpanList& neighborsList = instance.Data[List[i]];
 				for (int j = 0; j < neighborsList.Spans.size(); j++)
 				{
@@ -76,6 +79,11 @@ namespace voxelFuncs
 					std::shared_ptr<wayNode> newNode = std::make_shared<wayNode>(0, 0, 0);
 					newNode->sp = &searchSpan;
 					neighbors.emplace_back(newNode);
+				}*/
+				auto nextCell = cellList[currentCell.neighborsIndex[i]];
+				for(int j = 0; j < nextCell.spanlist.size(); j++){
+					auto&& searchSpan = nextCell.spanlist.Spans[j];
+					if (std::abs(searchSpan.top - current_node->sp->top) > 2* sphere.GetCellSize())
 				}
 			}
 
@@ -129,7 +137,22 @@ namespace voxelFuncs
 		return  SpanData::getInstance().Data[RandomListIndex].Spans[RandomSpanIndex];
 	}
 	
-
+	std::tuple<CellId,int> getRandomSpan(const SegmentMgr& Sphere){
+		int range = Sphere.listData.size();
+		int RandomListIndex;
+		int RandomSpanIndex;
+		while (true)
+		{
+			RandomListIndex = rand() % range;
+			
+			if (Sphere.listData[RandomListIndex].spanList.size() > 0)
+			{
+				RandomSpanIndex = rand() % (Sphere.listData[RandomListIndex].spanList.size());
+				break;
+			}
+		}
+		return  {Sphere.handleData[RandomListIndex],RandomSpanIndex};
+	}
 
 	void ReCastSphereVoxelization(const std::unique_ptr<SceneMgr>& dataPtr, const std::shared_ptr<segment_mgr::SegmentMgr> Sphere, int TileSize, float cellStride, float cellHeight, float minHeight, float maxHeight)
 	{
@@ -229,7 +252,6 @@ namespace voxelFuncs
 	
 	void ReCastHeightFieldToSpanData(const Tile& t, rcHeightfield& hf, const std::shared_ptr<segment_mgr::SegmentMgr> Sphere,float cellHeight,float minHeight)
 	{
-		auto&& instance = SpanData::getInstance();
 		for (int x = 0; x < Sphere->GetTileSize(); x++)
 		{
 			for (int z = 0; z < Sphere->GetTileSize(); z++)
@@ -245,7 +267,7 @@ namespace voxelFuncs
 						s = s->next;
 					}
 				}
-				instance.Data.emplace_back(std::move(List));
+				Sphere->listData[Sphere->CellIdGetIndice(CellId(t.tileIndex,x,z))].spanlist=List;
 			}
 		}
 	}

@@ -306,8 +306,7 @@ namespace
 				cameraPosNow[1] = cameraGetPosition().y;
 				cameraPosNow[2] = cameraGetPosition().z;
 				
-				Span f;
-				Span t;
+				
 				if (ImGui::Button("Gen Random Point"))
 				{
 					
@@ -332,8 +331,8 @@ namespace
 					
 					
 					way.swap(std::vector<std::shared_ptr<voxelFuncs::wayNode>>());
-					f = voxelFuncs::getRandomSpan(*Spheres[0]);
-					t = voxelFuncs::getRandomSpan(*Spheres[0]);
+					auto && [f,k] = voxelFuncs::getRandomSpan(*Spheres[0]);
+					auto && [t,s] = voxelFuncs::getRandomSpan(*Spheres[0]);
 					way = voxelFuncs::findWays(f, t, *Spheres[0]);
 
 					const segment_mgr::Tile& fromTile = Spheres[0]->GetTileByIndex(SpanData::getInstance().Data[f.ListIndex].TileIndex);
