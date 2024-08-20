@@ -11,13 +11,13 @@ namespace voxelFuncs
 	
 	std::vector<std::shared_ptr<wayNode>> findWays(const CellId startC,const int startS, const CellId endC,const int endS, SegmentMgr& sphere)
 	{
-		CellPos3D startCell=sphere.GetCellId3DFromWorldPos();
+		//CellPos3D startCell=sphere.GetCellId3DFromWorldPos();
 		std::shared_ptr<wayNode> start = std::make_shared<wayNode>(0, 0, 0);
-		start->cell = sphere.listData[sphere.CellIdGetIndice(startC)];
+		start->cell = &sphere.listData[sphere.CellIdGetIndice(startC)];
 		start->spanIndex = startS;
 
 		std::shared_ptr<wayNode> end = std::make_shared<wayNode>(0, 0, 0);
-		end->cell = sphere.listData[sphere.CellIdGetIndice(endC)];
+		end->cell = &sphere.listData[sphere.CellIdGetIndice(endC)];
 		end->spanIndex = endS;
 
 		int SearchCount = 0;
@@ -67,23 +67,37 @@ namespace voxelFuncs
 			auto currentCell = cellList[current_node->sp->ListIndex];
 			for (int i = 0; i < cellList[current_node->sp->ListIndex].neighborsIndex.size(); i++)
 			{
-				/*const auto List = cellList[current_node->sp->ListIndex].neighborsIndex;
-				const SpanList& neighborsList = instance.Data[List[i]];
-				for (int j = 0; j < neighborsList.Spans.size(); j++)
-				{
-					auto&& searchSpan = neighborsList.Spans[j];
-					if (std::abs(searchSpan.top - current_node->sp->top) > 2* sphere.GetCellSize())
+					/*const auto List = cellList[current_node->sp->ListIndex].neighborsIndex;
+					const SpanList& neighborsList = instance.Data[List[i]];
+					for (int j = 0; j < neighborsList.Spans.size(); j++)
 					{
-						continue;
-					}
-					std::shared_ptr<wayNode> newNode = std::make_shared<wayNode>(0, 0, 0);
-					newNode->sp = &searchSpan;
-					neighbors.emplace_back(newNode);
-				}*/
-				auto nextCell = cellList[currentCell.neighborsIndex[i]];
+						auto&& searchSpan = neighborsList.Spans[j];
+						if (std::abs(searchSpan.top - current_node->sp->top) > 2* sphere.GetCellSize())
+						{
+							continue;
+						}
+						std::shared_ptr<wayNode> newNode = std::make_shared<wayNode>(0, 0, 0);
+						newNode->sp = &searchSpan;
+						neighbors.emplace_back(newNode);
+					}*/
+
+				segment_mgr::Cell* nextCell = &cellList[currentCell.neighborsIndex[i]];
 				for(int j = 0; j < nextCell.spanlist.size(); j++){
 					auto&& searchSpan = nextCell.spanlist.Spans[j];
-					if (std::abs(searchSpan.top - current_node->sp->top) > 2* sphere.GetCellSize())
+					if (std::abs(searchSpan.top - current_node->sp->top) <= 2* sphere.GetCellSize()){
+						bool inClosedList = false;
+						for (auto node:closed_list)
+						{
+							if(node->cell->centerPos==nextCell.centerPos){
+								inClosedList = true;
+							}
+						}
+						if(inClosedList)
+							continue;
+						std::shared_ptr<wayNode> newNode = std::make_shared<wayNode>(0,0,0);
+						newNode->cell = nextCell;
+						
+					}
 				}
 			}
 

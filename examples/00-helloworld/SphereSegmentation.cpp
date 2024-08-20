@@ -256,6 +256,8 @@ namespace segment_mgr
 		return dis;
 	}
 
+	
+
 	std::vector<int> SphereSegmentMgr::GetSquareTileIds(const int TileId1, const int TileId2) const//find minimal ract tile set contain 2 tiles
 	{
 		std::vector<int> result;

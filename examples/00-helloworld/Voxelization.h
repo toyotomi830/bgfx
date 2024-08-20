@@ -21,7 +21,7 @@ namespace voxelFuncs
 		float h;
 		std::weak_ptr<wayNode> parnet;
 		const Cell* cell;
-		const int spanIndex;
+		int spanIndex;
 		wayNode(float f, float g, float h)
 			:f(f), g(g), h(h)
 		{
@@ -77,7 +77,7 @@ namespace voxelFuncs
 	float getSpanDistance(const Span& s1, const Span& s2, SegmentMgr& sphere);
 	//float getSpantDistanceManhattan(const Span& s1, const Span& s2, SegmentMgr& sphere);
 	std::vector<std::shared_ptr<wayNode>> findWays(const Span& sp1, const Span& sp2, SegmentMgr& sphere);
-	std::tuple<CellId,int> getRandomSpan(const SegmentMgr& Sphere);
+	//std::tuple<CellId,int> getRandomSpan(const SegmentMgr& Sphere);
 	Span getRandomSpan(const SegmentMgr& Sphere);
 	
 	

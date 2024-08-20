@@ -131,6 +131,7 @@ namespace segment_mgr
 		virtual float GetCellId3dDistance(const CellPos3D& s1, const CellPos3D& s2, const HeightParams& parm, DistanceFuncEnum f = DistanceFuncEnum::kSphericalManhattan) const = 0;
 		virtual std::vector<int> GetSquareTileIds(const int TileId1, const int TileId2) const = 0;
 		virtual std::vector<int> GetTriangleTileIds(const glm::vec3& p1, const glm::vec3& p2, const glm::vec3& p3, const glm::vec3& center, const glm::vec3& vecDir = {}) const = 0;
+		virtual float GetCellDistance(const Cell &c1,const uint16_t y1, const Cell &c2, const HeightParams& parm, DistanceFuncEnum f = DistanceFuncEnum::kSphericalManhattan) =0;
 		//------------------------------Virtual func
 		virtual const Tile& GetTileByIndex(int index) const;
 
